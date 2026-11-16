@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FolderLinks – Сохраните ссылки на каналы и группы из своего аккаунта Telegram</title>
+  <meta name="description" content="FolderLinks мгновенно и бесплатно превращает ссылку на Telegram-папку в подробный список каналов и групп. Выгрузка в Excel, HTML, JSON, CSV и другие форматы без передачи доступа к аккаунту.">
+  
+  <!-- Иконка вкладки в браузере -->
+  <link rel="icon" type="image/png" href="../assets/avatar.png">
+
+  <!-- Стили оформления страницы -->
+  <style>
+    :root {
+      --primary: #2481cc;
+      --primary-hover: #1c6ba8;
+      --text-main: #1f2937;
+      --text-muted: #4b5563;
+      --bg-light: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --container-width: 960px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-main);
+      background-color: var(--bg-light);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    a:hover {
+      color: var(--primary-hover);
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: var(--container-width);
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Шапка сайта */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 0;
+    }
+
+    /* Расширяем контейнер именно в шапке, чтобы развести бренд влево, а меню вправо */
+    header .container {
+      max-width: 1100px;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px; /* Защитный зазор между брендом и ссылками */
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--text-main);
+    }
+
+    .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+    }
+
+    nav {
+      display: flex;
+      gap: 12px; /* Чуть компактнее зазоры между ссылками */
+      font-size: 0.9rem;
+      align-items: center;
+      flex-shrink: 0; /* Меню не сжимается и не налезает на логотип */
+    }
+
+    .lang-switch {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Первый экран (Hero) */
+    .hero {
+      padding: 60px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      line-height: 1.25;
+      margin-bottom: 20px;
+      color: #0f172a;
+    }
+
+    .hero-lead {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .hero-benefit {
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .btn-main {
+      display: inline-block;
+      background: var(--primary);
+      color: #ffffff !important;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(36, 129, 204, 0.25);
+    }
+
+    .btn-main:hover {
+      background: var(--primary-hover);
+      text-decoration: none;
+    }
+
+    .hero-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 0.9rem;
+    }
+
+    .media-card {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    .media-card img,
+    .media-card video {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Общие стили секций */
+    section {
+      padding: 50px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    h2 {
+      font-size: 1.7rem;
+      margin-bottom: 30px;
+      color: #0f172a;
+    }
+
+    /* Как это работает: шаги слева, колонка скриншотов ru-3 и ru-5 справа */
+    .how-it-works-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 32px;
+      align-items: center; /* Центрируем скриншот по вертикали относительно всех шагов */
+    }
+
+    .steps-column {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .step-number {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      font-weight: bold;
+      width: 26px;
+      height: 26px;
+      line-height: 26px;
+      text-align: center;
+      border-radius: 50%;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .step-card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+    }
+
+    .step-card p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    /* Правая колонка скриншотов */
+    .screenshots-column {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Карточки использования */
+    .use-cases {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .use-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+
+    .use-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+      color: #0f172a;
+    }
+
+    .use-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Блок выгрузки со скриншотом ru-4 */
+    .export-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .feature-list {
+      list-style: none;
+      margin-bottom: 24px;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 24px;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .formats-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      background: #e2e8f0;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    /* Безопасность */
+    .security-box {
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      border-left: 5px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 24px;
+      font-size: 1.05rem;
+    }
+
+    .security-box p {
+      margin-bottom: 10px;
+    }
+
+    .security-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Раскрывающийся FAQ (аккордеон) */
+    .faq-accordion {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    details.faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+
+    details.faq-item[open] {
+      border-color: #cbd5e1;
+    }
+
+    summary.faq-question {
+      padding: 16px 20px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #0f172a;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
+    }
+
+    summary.faq-question::-webkit-details-marker {
+      display: none;
+    }
+
+    summary.faq-question::after {
+      content: "+";
+      font-size: 1.4rem;
+      line-height: 1;
+      color: var(--primary);
+      transition: transform 0.2s ease;
+    }
+
+    details.faq-item[open] summary.faq-question::after {
+      content: "−";
+    }
+
+    .faq-answer {
+      padding: 0 20px 18px 20px;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      border-top: 1px solid #f1f5f9;
+      padding-top: 12px;
+    }
+
+    /* Футер */
+    footer {
+      background: #ffffff;
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      text-align: center;
+    }
+
+    .footer-cta {
+      margin-bottom: 30px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 0.95rem;
+    }
+
+    /* Адаптивность для мобильных */
+    @media (max-width: 768px) {
+      .hero-grid,
+      .how-it-works-layout,
+      .export-grid {
+        grid-template-columns: 1fr;
+      }
+
+      nav a:not(.lang-switch) {
+        display: none;
+      }
+
+      h1 {
+        font-size: 1.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Шапка сайта -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <img src="../assets/avatar.png" alt="Логотип FolderLinks">
+        <span>FolderLinks</span>
+      </div>
+      <nav>
+        <a href="#how-it-works">Как это работает</a>
+        <a href="#benefits">Для чего пригодится</a>
+        <a href="#features">Что можно выгрузить</a>
+        <a href="#security">Безопасность</a>
+        <a href="#faq">Частые вопросы</a>
+        <a href="/" class="lang-switch">English</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Первый экран (Hero) -->
+    <div class="container hero">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <h1>Сохраните ссылки на каналы и группы из своего аккаунта Telegram</h1>
+          
+          <p class="hero-lead">
+            FolderLinks мгновенно и бесплатно превращает ссылку на Telegram-папку в подробный список каналов и групп.
+          </p>
+          
+          <div class="hero-benefit">
+            Вам не нужно вручную копировать ссылки, писать скрипты и предоставлять доступ к вашему аккаунту.
+          </div>
+
+          <p class="hero-lead">
+            Получите результат сообщением в Telegram или выгрузите его в Excel, HTML, JSON и других форматах.
+          </p>
+
+          <div class="hero-actions">
+            <a href="https://t.me/FolderLinksBot" target="_blank" rel="noopener" class="btn-main">
+              Открыть FolderLinks
+            </a>
+            <div class="hero-links">
+              <a href="#how-it-works">Как это работает</a> •
+              <a href="#benefits">Для чего пригодится</a> •
+              <a href="#features">Что можно выгрузить</a> •
+              <a href="#security">Безопасность</a> •
+              <a href="#faq">Частые вопросы</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Видео первого экрана (ru.mp4) -->
+        <div class="media-card">
+          <video controls autoplay muted loop playsinline poster="../assets/ru-1.png">
+            <source src="../assets/ru.mp4" type="video/mp4">
+            <img src="../assets/ru-1.png" alt="Пример работы бота FolderLinks">
+          </video>
+        </div>
+      </div>
+    </div>
+
+    <!-- Как это работает -->
+    <section id="how-it-works">
+      <div class="container">
+        <h2>Как это работает</h2>
+        <div class="how-it-works-layout">
+          <!-- Шаги 1-4 слева -->
+          <div class="steps-column">
+            <div class="step-card">
+              <span class="step-number">1</span>
+              <h3>Скопируйте ссылку на папку</h3>
+              <p>В Telegram выберите существующую папку или создайте новую с нужными каналами и группами. Создайте ссылку на неё вида <code>https://t.me/addlist/...</code> Или используйте ссылку на чужую публичную папку.</p>
+            </div>
+
+            <div class="step-card">
+              <span class="step-number">2</span>
+              <h3>Отправьте ссылку в FolderLinks</h3>
+              <p>Бот пришлёт название папки и ссылки на каналы и группы. В приложении можно просмотреть список и выбрать, что выгрузить.</p>
+            </div>
+
+            <div class="step-card">
+              <span class="step-number">3</span>
+              <h3>Выберите формат выгрузки</h3>
+              <p>Получите результат сообщением, таблицей, текстовым файлом или браузерными закладками. Несколько папок можно объединить в один файл.</p>
+            </div>
+
+            <div class="step-card">
+              <span class="step-number">4</span>
+              <h3>Возвращайтесь к сохранённому результату</h3>
+              <p>Папка сохранится в FolderLinks: её можно открыть и выгрузить снова. Исходная ссылка больше не нужна.</p>
+            </div>
+          </div>
+
+          <!-- Справа: только ru-3, отцентрованный по вертикали -->
+          <div class="media-card">
+            <img src="../assets/ru-3.png" alt="Главный экран приложения FolderLinks">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Для чего пригодится -->
+    <section id="benefits">
+      <div class="container">
+        <h2>Для чего пригодится</h2>
+        <div class="use-cases">
+          <div class="use-card">
+            <h3>Сохранить список каналов и групп</h3>
+            <p>Создайте резервную копию списка своих подписок. Сохраняйте и изучайте публичные Telegram-папки, не добавляя их в свой аккаунт.</p>
+          </div>
+
+          <div class="use-card">
+            <h3>Подготовить подборку или каталог</h3>
+            <p>Получите готовые гиперссылки для публикаций, рекомендаций, справочников и рабочих документов. Останется добавить свои описания.</p>
+          </div>
+
+          <div class="use-card">
+            <h3>Собрать источники для дальнейшей обработки</h3>
+            <p>Выгрузите список каналов для скриптов, парсинга и ИИ-агентов. Для каналов можно выбрать ссылки на веб-превью вида <code>https://t.me/s/username</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Что можно выгрузить со скриншотом ru-4 -->
+    <section id="features">
+      <div class="container">
+        <h2>Что можно выгрузить</h2>
+        <div class="export-grid">
+          <div>
+            <ul class="feature-list">
+              <li>Названия каналов и групп.</li>
+              <li>Ссылки вида <code>https://t.me/username</code>.</li>
+              <li>Количество подписчиков или участников.</li>
+              <li>Метки Telegram: верификация, скам, фейк.</li>
+              <li>Ссылки на веб-превью каналов вида <code>https://t.me/s/username</code>.</li>
+              <li>Несколько папок в одном файле.</li>
+            </ul>
+
+            <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Форматы</h3>
+            <div class="formats-badges">
+              <span class="badge">Сообщение Telegram</span>
+              <span class="badge">TXT</span>
+              <span class="badge">Excel</span>
+              <span class="badge">CSV</span>
+              <span class="badge">JSON</span>
+              <span class="badge">Markdown</span>
+              <span class="badge">HTML</span>
+              <span class="badge">Браузерные закладки</span>
+            </div>
+          </div>
+
+          <!-- Скриншот ru-4 (список чатов с подписчиками и галочками) -->
+          <div class="media-card">
+            <img src="../assets/ru-4.png" alt="Список каналов в приложении FolderLinks">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Безопасность -->
+    <section id="security">
+      <div class="container">
+        <h2>Безопасность</h2>
+        <div class="security-box">
+          <p><strong>FolderLinks не просит доступа к вашему Telegram-аккаунту и прав администратора.</strong></p>
+          <p>Не подписывает вас на каналы и группы, не вступает в них сам и не читает публикации. Не отслеживает изменения по присланным ссылкам.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Раскрывающийся FAQ -->
+    <section id="faq">
+      <div class="container">
+        <h2>Частые вопросы</h2>
+        <div class="faq-accordion">
+          
+          <details class="faq-item">
+            <summary class="faq-question">Можно ли выгрузить все свои каналы и группы?</summary>
+            <div class="faq-answer">
+              Да, если собрать их в одну или несколько папок. Бот не имеет доступа к вашему аккаунту и не получает список ваших подписок автоматически.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Можно ли сохранить сообщения и фотографии?</summary>
+            <div class="faq-answer">
+              Нет. FolderLinks не просматривает и не выгружает содержимое каналов и групп – публикации, фотографии и другие файлы.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Что произойдёт с частными каналами и группами?</summary>
+            <div class="faq-answer">
+              Для частных каналов и групп без публичного username FolderLinks не сможет создать публичные ссылки.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Можно ли выгрузить содержимое чужой публичной папки?</summary>
+            <div class="faq-answer">
+              Да. Отправьте ссылку на папку в FolderLinks. Добавлять папку в свой аккаунт и подписываться на её каналы и группы нет необходимости.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Обновляются ли список и количество подписчиков автоматически?</summary>
+            <div class="faq-answer">
+              Нет. FolderLinks сохраняет результат обработки и не отслеживает дальнейшие изменения. Чтобы обновить сведения, отправьте ссылку повторно.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Можно ли повторно выгрузить папку, если ссылка на неё удалена?</summary>
+            <div class="faq-answer">
+              Да. Если результат сохранён в FolderLinks, его можно открыть и выгрузить снова. Для получения обновлённых сведений понадобится действующая ссылка.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Можно ли объединить несколько папок в один файл?</summary>
+            <div class="faq-answer">
+              Да. В приложении выберите нужные сохранённые папки и задайте порядок их расположения в общем файле.
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary class="faq-question">Чем обычные ссылки отличаются от ссылок на веб-превью?</summary>
+            <div class="faq-answer">
+              Ссылка вида <code>https://t.me/username</code> ведёт на канал или группу внутри Telegram. Ссылка вида <code>https://t.me/s/username</code> – на превью канала в браузере, где его можно смотреть без аккаунта и приложения. Для групп такая возможность не предусмотрена.
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Завершение страницы -->
+  <footer>
+    <div class="container">
+      <div class="footer-cta">
+        <h2 style="margin-bottom: 12px;">Сохраните список каналов и групп в удобном формате</h2>
+        <a href="https://t.me/FolderLinksBot" target="_blank" rel="noopener" class="btn-main">
+          Открыть FolderLinks
+        </a>
+      </div>
+      <div class="footer-links">
+        <a href="https://telegra.ph/FolderLinks--Spravka-10-31" target="_blank" rel="noopener">Справка</a> •
+        <a href="https://t.me/FolderLinksSupportBot" target="_blank" rel="noopener">Поддержка</a> •
+        <a href="/">English</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
