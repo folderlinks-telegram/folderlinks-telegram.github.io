@@ -395,6 +395,10 @@
       padding-top: 12px;
     }
 
+    .faq-answer p + p {
+      margin-top: 10px;
+    }
+
     /* Footer */
     footer {
       background: #ffffff;
@@ -628,7 +632,12 @@
           <details class="faq-item">
             <summary class="faq-question">What happens to private channels and groups?</summary>
             <div class="faq-answer">
-              For private channels and groups without a public username, FolderLinks cannot generate standard public links.
+              <p>
+                When creating a link, you can select private channels and groups where you have permission to invite other users. However, since they do not have public usernames, FolderLinks cannot generate public links for them.
+              </p>
+              <p>
+                <strong>Please note:</strong> If you add a private basic group when creating a folder link, Telegram may automatically convert it into a supergroup without a separate warning. This conversion does not make the group public.
+              </p>              
             </div>
           </details>
 
