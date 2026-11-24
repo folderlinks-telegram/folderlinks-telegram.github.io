@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>FolderLinks — технические работы / Maintenance</title>
+
+  <style>
+    /* Цвета подстраиваются под светлую или тёмную тему устройства. */
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, sans-serif;
+    }
+
+    /* Карточка помещается на узком экране и прокручивается при необходимости. */
+    body {
+      box-sizing: border-box;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 20px;
+      display: grid;
+      place-items: center;
+      background: Canvas;
+      color: CanvasText;
+    }
+
+    main {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 480px;
+      padding: clamp(20px, 6vw, 36px);
+      border: 1px solid GrayText;
+      border-radius: 20px;
+    }
+
+    .brand {
+      margin: 0 0 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    h1, h2 {
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    h1 { font-size: 1.7rem; }
+    h2 { font-size: 1.35rem; }
+    p { line-height: 1.55; }
+    section > :last-child { margin-bottom: 0; }
+
+    /* Разделитель между русским и английским текстами. */
+    section + section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid GrayText;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="brand">FolderLinks</p>
+
+    <section aria-labelledby="title-ru">
+      <h1 id="title-ru">Технические работы</h1>
+      <p>
+        В FolderLinks идут плановые технические работы.
+        Ориентировочное окончание — 25 ноября в 13:00 UTC (16:00 МСК).
+      </p>
+      <p>Пожалуйста, попробуйте снова после окончания работ.</p>
+    </section>
+
+    <section lang="en" aria-labelledby="title-en">
+      <h2 id="title-en">Scheduled maintenance</h2>
+      <p>
+        FolderLinks is undergoing scheduled maintenance.
+        Expected completion: November 25 at 13:00 UTC (16:00 Moscow time).
+      </p>
+      <p>Please try again after maintenance is complete.</p>
+    </section>
+  </main>
+</body>
+</html>
